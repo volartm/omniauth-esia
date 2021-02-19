@@ -70,6 +70,9 @@ module OmniAuth
 
         def client_secret
           @client_secret ||= begin
+            OpenSSL::Engine.load
+            engine = OpenSSL::Engine.by_id('gost')
+            engine.set_default(0xFFFF)
             data = "#{options.scope}#{timestamp}#{options.client_id}#{state}"
             key  = OpenSSL::PKey.read(File.read(options.key_path), options.key_passphrase)
             crt  = OpenSSL::X509::Certificate.new(File.read(options.crt_path))
