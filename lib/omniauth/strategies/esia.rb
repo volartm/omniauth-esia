@@ -17,6 +17,7 @@ module OmniAuth
       option :key_passphrase, nil
       option :crt_path, 'config/keys/certificate.crt'
       option :access_type, 'online'
+      option :engine, nil
 
       uid { JWT.decode(access_token.token, nil, false).first['urn:esia:sbj_id'] }
 
@@ -70,9 +71,7 @@ module OmniAuth
 
         def client_secret
           @client_secret ||= begin
-            OpenSSL::Engine.load
-            engine = OpenSSL::Engine.by_id('gost')
-            engine.set_default(0xFFFF)
+            load_engine
             data = "#{options.scope}#{timestamp}#{options.client_id}#{state}"
             key  = OpenSSL::PKey.read(File.read(options.key_path), options.key_passphrase)
             crt  = OpenSSL::X509::Certificate.new(File.read(options.crt_path))
@@ -98,6 +97,13 @@ module OmniAuth
         rescue => e
           {}
         end
+
+      def load_engine
+        binding.pry
+        OpenSSL::Engine.load
+        engine = OpenSSL::Engine.by_id('gost')
+        engine.set_default(0xFFFF)
+      end
     end
   end
 end
